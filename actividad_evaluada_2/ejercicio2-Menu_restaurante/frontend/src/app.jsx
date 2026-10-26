@@ -24,6 +24,22 @@ function App() {
     }
   };
 
+  const agregarPlato = async (alimentoId) => {
+    try {
+      setErrorMsg('');
+      const respuesta = await fetch(`${API_URL}/reserva/agregar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ alimentoId, cantidad: 1 })
+      });
+      const data = await respuesta.json();
+      if (!respuesta.ok) throw new Error(data.error || data.mensaje || 'Stock insuficiente');
+      await cargarDatos();
+    } catch (err) {
+      setErrorMsg(err.message);
+    }
+  };
+
   useEffect(() => {
     cargarDatos();
   }, []);
@@ -39,7 +55,26 @@ function App() {
       </Navbar>
 
       {errorMsg && <UncontrolledAlert color="warning">{errorMsg}</UncontrolledAlert>}
-      <h2>Cargando menú...</h2>
+      <Row>
+        <Col xs="12" md="8">
+          <h4>📜 Menú del Día</h4>
+          <Row>
+            {menu.map((plato) => (
+              <Col xs="12" md="6" key={plato.id}>
+                <Card className="mb-3 shadow-sm">
+                  <CardBody>
+                    <CardTitle tag="h5">{plato.nombre} <Badge color="success">${Number(plato.precio).toFixed(2)}</Badge></CardTitle>
+                    <CardText>Stock: {plato.stock} porciones</CardText>
+                    <Button color="primary" block disabled={plato.stock === 0} onClick={() => agregarPlato(plato.id)}>
+                      {plato.stock === 0 ? 'Agotado' : 'Añadir a la Reserva'}
+                    </Button>
+                  </CardBody>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </Col>
+      </Row>
     </Container>
   );
 }
