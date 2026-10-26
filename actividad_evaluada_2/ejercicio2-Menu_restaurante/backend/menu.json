@@ -1,0 +1,30 @@
+{
+  "menu": [
+    {
+      "id": 101,
+      "nombre": "Menu Ejecutivo (Pollo)",
+      "precio": 5.5,
+      "stock": 12,
+      "categoria": "Fuerte"
+    },
+    {
+      "id": 102,
+      "nombre": "Menu sixseven (infantil)",
+      "precio": 6.7,
+      "stock": 6,
+      "categoria": "Simple"
+    },
+    {
+      "id": 103,
+      "nombre": "Especial triple T (carne con papas)",
+      "precio": 6,
+      "stock": 5,
+      "categoria": "Fuerte"
+    }
+  ],
+  "reserva": {
+    "saldo": 50.0,
+    "itemsReservados": [],
+    "total": 0.0
+  }
+}
