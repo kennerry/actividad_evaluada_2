@@ -13,7 +13,8 @@ import {
     CardText,
     Button,
     ListGroup,
-    ListGroupItem
+    ListGroupItem,
+    ButtonGroup
 } from 'reactstrap';
 
 const API_URL = 'http://localhost:3000/api';
@@ -88,6 +89,12 @@ function App() {
         cargarDatos();
     }, []);
 
+    // Función auxiliar para buscar el nombre del plato según su ID
+    const obtenerNombrePlato = (id) => {
+        const plato = menu.find((p) => p.id === id);
+        return plato ? plato.nombre : `Plato #${id}`;
+    };
+
     return (
         <Container className="my-4">
             <Navbar color="dark" dark className="mb-4 p-3 rounded d-flex justify-content-between">
@@ -125,18 +132,20 @@ function App() {
                     {(!reserva.itemsReservados || reserva.itemsReservados.length === 0) ? (
                         <p className="text-muted">No has agregado platos a tu reserva.</p>
                     ) : (
-                        <ListGroup>
+                        <ListGroup className="shadow-sm">
                             {reserva.itemsReservados.map((item) => (
                                 <ListGroupItem key={item.id} className="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <strong>Plato #{item.id}</strong>
+                                        <strong>{obtenerNombrePlato(item.id)}</strong>
                                         <div><small className="text-muted">Cantidad: {item.cantidad}</small></div>
                                     </div>
-                                    <ButtonGroup size="sm" className="me-2">
-                                        <Button outline onClick={() => actualizarPorciones(item.id, item.cantidad - 1)}>-</Button>
-                                        <Button outline onClick={() => actualizarPorciones(item.id, item.cantidad + 1)}>+</Button>
-                                    </ButtonGroup>
-                                    <Button color="danger" outline size="sm" onClick={() => eliminarPlato(item.id)}>Quitar</Button>
+                                    <div className="d-flex align-items-center gap-2">
+                                        <ButtonGroup size="sm">
+                                            <Button outline onClick={() => actualizarPorciones(item.id, item.cantidad - 1)}>-</Button>
+                                            <Button outline onClick={() => actualizarPorciones(item.id, item.cantidad + 1)}>+</Button>
+                                        </ButtonGroup>
+                                        <Button color="danger" outline size="sm" onClick={() => eliminarPlato(item.id)}>Quitar</Button>
+                                    </div>
                                 </ListGroupItem>
                             ))}
                         </ListGroup>
