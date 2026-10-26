@@ -11,12 +11,14 @@ function guardarDatos(datos) {
   fs.writeFileSync(rutaArchivo, JSON.stringify(datos, null, 2), "utf-8");
 }
 
-router.get("/menu", controller.mostrarMenu());
-router.get("/reserva", controller.mostrarReserva());
+router.get("/menu", controller.mostrarMenu);
+router.get("/reserva", controller.mostrarReserva);
 
-router.post("/reserva/agregar", controller.agregarPlatoAReserva());
+router.post("/reserva/agregar", controller.agregarPlatoAReserva);
 router.put(
   "/reserva/actualizar-porciones/:id",
-  controller.actualizarReservas(),
+  controller.actualizarReservas,
 );
-router.delete("/reserva/eliminar/:id", controller.borrarPlatoDeLaReserva());
+router.delete("/reserva/eliminar/:id", controller.borrarPlatoDeLaReserva);
+
+module.exports = router;
