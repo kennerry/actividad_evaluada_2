@@ -22,6 +22,31 @@ app.post("/reset", (req, res) => {
   res.json({ mensaje: "El juego se ha reiniciado!" });
 });
 
+app.post("/guess", (req, res) => {
+  const numeroElejido = Number(req.body.numero);
+
+  if (isNaN(numeroElejido)) {
+    return res.status(400).json({ error: "Se debe enviar un numero valido" });
+  }
+
+  if (numeroElejido > numeroAdivinar) {
+    return res.json({
+      resultado: "Menor",
+      mensaje: "El numero a adivinar es menor!",
+    });
+  } else if (numeroElejido < numeroAdivinar) {
+    return res.json({
+      resultado: "Mayor",
+      mensaje: "El numero a adivinar es mayor!",
+    });
+  } else {
+    return res.json({
+      resultado: "Acierto",
+      mensaje: "Se ha acertado el numero secreto!",
+    });
+  }
+});
+
 app.listen(puerto, () => {
   console.log(`Servidor corriendo en http://localhost:${puerto}`);
 });
