@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Container, 
-  Navbar, 
-  NavbarBrand, 
-  Badge, 
-  UncontrolledAlert, 
-  Row, 
-  Col, 
-  Card, 
-  CardBody, 
-  CardTitle, 
-  CardText, 
-  Button, 
-  ListGroup, 
-  ListGroupItem 
+import {
+    Container,
+    Navbar,
+    NavbarBrand,
+    Badge,
+    UncontrolledAlert,
+    Row,
+    Col,
+    Card,
+    CardBody,
+    CardTitle,
+    CardText,
+    Button,
+    ListGroup,
+    ListGroupItem
 } from 'reactstrap';
 
 const API_URL = 'http://localhost:3000/api';
@@ -55,6 +55,35 @@ function App() {
         }
     };
 
+    const actualizarPorciones = async (alimentoId, nuevaCantidad) => {
+        if (nuevaCantidad < 1) return eliminarPlato(alimentoId);
+        try {
+            setErrorMsg('');
+            const respuesta = await fetch(`${API_URL}/reserva/actualizar-porciones/${alimentoId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cantidad: nuevaCantidad })
+            });
+            const data = await respuesta.json();
+            if (!respuesta.ok) throw new Error(data.error || data.mensaje || 'Saldo insuficiente');
+            await cargarDatos();
+        } catch (err) {
+            setErrorMsg(err.message);
+        }
+    };
+
+    const eliminarPlato = async (alimentoId) => {
+        try {
+            setErrorMsg('');
+            const respuesta = await fetch(`${API_URL}/reserva/eliminar/${alimentoId}`, { method: 'DELETE' });
+            const data = await respuesta.json();
+            if (!respuesta.ok) throw new Error(data.error || 'Error al eliminar');
+            await cargarDatos();
+        } catch (err) {
+            setErrorMsg(err.message);
+        }
+    };
+
     useEffect(() => {
         cargarDatos();
     }, []);
@@ -72,9 +101,8 @@ function App() {
             {errorMsg && <UncontrolledAlert color="warning">{errorMsg}</UncontrolledAlert>}
 
             <Row>
-                {/* ZONA IZQUIERDA: Menú del día */}
                 <Col xs="12" md="8">
-                    <h4>📜 Menú del Día</h4>
+                    <h4>Menú del Día</h4>
                     <Row>
                         {menu.map((plato) => (
                             <Col xs="12" md="6" key={plato.id}>
@@ -92,9 +120,8 @@ function App() {
                     </Row>
                 </Col>
 
-                {/* ZONA DERECHA: Carrito Lateral */}
                 <Col xs="12" md="4">
-                    <h4>🛒 Tu Bandeja de Reserva</h4>
+                    <h4>Tu Bandeja de Reserva</h4>
                     {(!reserva.itemsReservados || reserva.itemsReservados.length === 0) ? (
                         <p className="text-muted">No has agregado platos a tu reserva.</p>
                     ) : (
@@ -105,6 +132,11 @@ function App() {
                                         <strong>Plato #{item.id}</strong>
                                         <div><small className="text-muted">Cantidad: {item.cantidad}</small></div>
                                     </div>
+                                    <ButtonGroup size="sm" className="me-2">
+                                        <Button outline onClick={() => actualizarPorciones(item.id, item.cantidad - 1)}>-</Button>
+                                        <Button outline onClick={() => actualizarPorciones(item.id, item.cantidad + 1)}>+</Button>
+                                    </ButtonGroup>
+                                    <Button color="danger" outline size="sm" onClick={() => eliminarPlato(item.id)}>Quitar</Button>
                                 </ListGroupItem>
                             ))}
                         </ListGroup>
