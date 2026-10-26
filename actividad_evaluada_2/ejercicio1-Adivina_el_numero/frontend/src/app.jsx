@@ -1,8 +1,19 @@
 import React, { useState } from 'react';
-import { Container, Card, CardBody, CardTitle, Form, FormGroup, Input, Button, Alert } from 'reactstrap';
-import 'bootstrap/dist/css/bootstrap.min.css';
-//Importar los componentes de reactstrap
-import { ListGroup, ListGroupItem, Badge } from 'reactstrap';
+import {
+    Container,
+    Card,
+    CardBody,
+    CardTitle,
+    Form,
+    FormGroup,
+    Input,
+    Button,
+    Alert,
+    ListGroup,
+    ListGroupItem,
+    Badge
+} from 'reactstrap';
+
 const API_URL = 'http://localhost:3000';
 
 function App() {
@@ -14,19 +25,26 @@ function App() {
 
     const manejarEnvio = async (e) => {
         e.preventDefault();
-        if (!numeroInput) return;
+
+        const numero = Number(numeroInput);
+
+        if (!numeroInput || isNaN(numero) || numero < 1 || numero > 100) {
+            setMensaje('Por favor ingresa un número válido entre 1 y 100.');
+            setTipoAlerta('warning');
+            return;
+        }
 
         try {
             const respuesta = await fetch(`${API_URL}/guess`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ numero: Number(numeroInput) }),
+                body: JSON.stringify({ numero: numero }),
             });
 
             const data = await respuesta.json();
             const nuevoIntento = {
                 id: Date.now(),
-                numero: Number(numeroInput),
+                numero: numero,
                 pista: data.resultado
             };
             setHistorial((prev) => [nuevoIntento, ...prev]);
@@ -65,6 +83,24 @@ function App() {
         }
     };
 
+    const manejarCambioInput = (e) => {
+        let valor = e.target.value;
+
+        valor = valor.replace(/-/g, '');
+
+        if (valor.length > 3) {
+            valor = valor.slice(0, 3);
+        }
+
+        setNumeroInput(valor);
+    };
+
+    const manejarKeyDown = (e) => {
+        if (e.key === '-' || e.key === 'e' || e.key === 'E' || e.key === '+') {
+            e.preventDefault();
+        }
+    };
+
     return (
         <Container className="mt-5" style={{ maxWidth: '600px' }}>
             <Card className="shadow-sm">
@@ -81,22 +117,24 @@ function App() {
                                 type="number"
                                 placeholder="Ingresa un número entre 1 y 100"
                                 value={numeroInput}
-                                onChange={(e) => setNumeroInput(e.target.value)}
+                                onChange={manejarCambioInput}
+                                onKeyDown={manejarKeyDown}
                                 disabled={haGanado}
+                                min="1"
+                                max="100"
                                 required
                             />
                         </FormGroup>
-                        <Button color="primary" type="submit" disabled={haGanado}>
+                        <Button color="primary" type="submit" disabled={haGanado} block>
                             Enviar Intento
                         </Button>
-                        {/*
-                         Si ya ganó, mostrar el botón destacado en verde */}
+
+                        {/* Mostrar botón verde si ganó o botón de enlace si aún juega */}
                         {haGanado ? (
                             <Button color="success" block className="mt-2" onClick={manejarReiniciar}>
                                 Jugar de Nuevo
                             </Button>
                         ) : (
-                            /* Si no ha ganado, permitir un reinicio manual en la esquina */
                             <div className="text-end mt-2">
                                 <Button color="link" size="sm" onClick={manejarReiniciar}>
                                     Reiniciar Juego
@@ -104,6 +142,7 @@ function App() {
                             </div>
                         )}
                     </Form>
+
                     <div className="mt-4">
                         <h5>Historial de Intentos ({historial.length})</h5>
                         <ListGroup style={{ maxHeight: '200px', overflowY: 'auto' }}>
