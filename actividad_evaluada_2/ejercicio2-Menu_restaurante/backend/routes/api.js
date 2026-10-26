@@ -15,5 +15,8 @@ router.get("/menu", controller.mostrarMenu());
 router.get("/reserva", controller.mostrarReserva());
 
 router.post("/reserva/agregar", controller.agregarPlatoAReserva());
-router.put("/reserva/actualizar-porciones/:id");
-router.delete("/reserva/eliminar/:id");
+router.put(
+  "/reserva/actualizar-porciones/:id",
+  controller.actualizarReservas(),
+);
+router.delete("/reserva/eliminar/:id", controller.borrarPlatoDeLaReserva());

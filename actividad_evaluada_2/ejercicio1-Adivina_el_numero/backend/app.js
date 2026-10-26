@@ -29,6 +29,12 @@ app.post("/guess", (req, res) => {
     return res.status(400).json({ error: "Se debe enviar un numero valido" });
   }
 
+  if (numeroElejido < 0 || numeroElejido > 100) {
+    return res
+      .status(400)
+      .json({ error: "El numero elejido debe estar en el rango de eleccion" });
+  }
+
   if (numeroElejido > numeroAdivinar) {
     return res.json({
       resultado: "Menor",
