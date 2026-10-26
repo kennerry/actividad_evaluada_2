@@ -46,6 +46,25 @@ function App() {
         }
     };
 
+    const manejarReiniciar = async () => {
+        try {
+            const respuesta = await fetch(`${API_URL}/reset`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            const data = await respuesta.json();
+
+            setMensaje(data.mensaje);
+            setTipoAlerta('info');
+            setHistorial([]);
+            setHaGanado(false);
+            setNumeroInput('');
+        } catch (error) {
+            setMensaje('Error al reiniciar el juego');
+            setTipoAlerta('danger');
+        }
+    };
+
     return (
         <Container className="mt-5" style={{ maxWidth: '600px' }}>
             <Card className="shadow-sm">
@@ -70,7 +89,21 @@ function App() {
                         <Button color="primary" type="submit" disabled={haGanado}>
                             Enviar Intento
                         </Button>
-                    </Form>                    
+                        {/*
+                         Si ya ganó, mostrar el botón destacado en verde */}
+                        {haGanado ? (
+                            <Button color="success" block className="mt-2" onClick={manejarReiniciar}>
+                                Jugar de Nuevo
+                            </Button>
+                        ) : (
+                            /* Si no ha ganado, permitir un reinicio manual en la esquina */
+                            <div className="text-end mt-2">
+                                <Button color="link" size="sm" onClick={manejarReiniciar}>
+                                    Reiniciar Juego
+                                </Button>
+                            </div>
+                        )}
+                    </Form>
                     <div className="mt-4">
                         <h5>Historial de Intentos ({historial.length})</h5>
                         <ListGroup style={{ maxHeight: '200px', overflowY: 'auto' }}>
