@@ -5,6 +5,7 @@ import {
     NavbarBrand,
     Badge,
     UncontrolledAlert,
+    Alert,
     Row,
     Col,
     Card,
@@ -18,11 +19,41 @@ import {
 } from 'reactstrap';
 
 const API_URL = 'http://localhost:3000/api';
+const TIEMPO_INICIAL = 300; //Segundos
 
 function App() {
     const [menu, setMenu] = useState([]);
     const [reserva, setReserva] = useState({ saldo: 0, itemsReservados: [], total: 0 });
     const [errorMsg, setErrorMsg] = useState('');
+    
+    // Estados para el Temporizador
+    const [tiempo, setTiempo] = useState(TIEMPO_INICIAL);
+    const [tiempoExpirado, setTiempoExpirado] = useState(false);
+
+    // Formatear segundos a MM:SS
+    const formatearTiempo = (seg) => {
+        const min = Math.floor(seg / 60);
+        const restante = seg % 60;
+        return `${min < 10 ? '0' : ''}${min}:${restante < 10 ? '0' : ''}${restante}`;
+    };
+
+    // Hook para la cuenta regresiva
+    useEffect(() => {
+        if (tiempoExpirado) return;
+
+        if (tiempo <= 0) {
+            setTiempoExpirado(true);
+            setErrorMsg('El tiempo para completar tu reserva ha expirado.');
+            return;
+        }
+
+        const intervalo = setInterval(() => {
+            setTiempo((prev) => prev - 1);
+        }, 1000);
+
+        // Limpieza del intervalo para evitar memory leaks
+        return () => clearInterval(intervalo);
+    }, [tiempo, tiempoExpirado]);
 
     const cargarDatos = async () => {
         try {
@@ -40,7 +71,16 @@ function App() {
         }
     };
 
+    const reiniciarReserva = async () => {
+        // Vaciamos visualmente la reserva o llamamos a un reload de datos
+        setTiempo(TIEMPO_INICIAL);
+        setTiempoExpirado(false);
+        setErrorMsg('');
+        await cargarDatos();
+    };
+
     const agregarPlato = async (alimentoId) => {
+        if (tiempoExpirado) return;
         try {
             setErrorMsg('');
             const respuesta = await fetch(`${API_URL}/reserva/agregar`, {
@@ -57,6 +97,7 @@ function App() {
     };
 
     const actualizarPorciones = async (alimentoId, nuevaCantidad) => {
+        if (tiempoExpirado) return;
         if (nuevaCantidad < 1) return eliminarPlato(alimentoId);
         try {
             setErrorMsg('');
@@ -74,6 +115,7 @@ function App() {
     };
 
     const eliminarPlato = async (alimentoId) => {
+        if (tiempoExpirado) return;
         try {
             setErrorMsg('');
             const respuesta = await fetch(`${API_URL}/reserva/eliminar/${alimentoId}`, { method: 'DELETE' });
@@ -89,7 +131,6 @@ function App() {
         cargarDatos();
     }, []);
 
-    // Función auxiliar para buscar el nombre del plato según su ID
     const obtenerNombrePlato = (id) => {
         const plato = menu.find((p) => p.id === id);
         return plato ? plato.nombre : `Plato #${id}`;
@@ -97,15 +138,30 @@ function App() {
 
     return (
         <Container className="my-4">
-            <Navbar color="dark" dark className="mb-4 p-3 rounded d-flex justify-content-between">
+            <Navbar color="dark" dark className="mb-4 p-3 rounded d-flex justify-content-between flex-wrap">
                 <NavbarBrand href="#">Food DEI S.A. de R.L.</NavbarBrand>
                 <div className="d-flex gap-3 align-items-center">
                     <span className="text-white">Saldo: <strong className="text-success">${Number(reserva.saldo).toFixed(2)}</strong></span>
                     <span className="text-white">Total: <Badge color="info" pill>${Number(reserva.total).toFixed(2)}</Badge></span>
+                    
+                    
+                    <Badge color={tiempo < 60 ? "danger" : "warning"} pill className="fs-6 ms-2">
+                         {formatearTiempo(tiempo)}
+                    </Badge>
                 </div>
             </Navbar>
 
-            {errorMsg && <UncontrolledAlert color="warning">{errorMsg}</UncontrolledAlert>}
+            {tiempoExpirado && (
+                <Alert color="danger" className="text-center mb-4">
+                    <h5>Tiempo Agotado</h5>
+                    <p>Se ha cerrado la sesión de reserva por límite de tiempo.</p>
+                    <Button color="primary" size="sm" onClick={reiniciarReserva}>
+                        Iniciar Nueva Reserva
+                    </Button>
+                </Alert>
+            )}
+
+            {errorMsg && !tiempoExpirado && <UncontrolledAlert color="warning">{errorMsg}</UncontrolledAlert>}
 
             <Row>
                 <Col xs="12" md="8">
@@ -117,7 +173,12 @@ function App() {
                                     <CardBody>
                                         <CardTitle tag="h5">{plato.nombre} <Badge color="success">${Number(plato.precio).toFixed(2)}</Badge></CardTitle>
                                         <CardText>Stock: {plato.stock} porciones</CardText>
-                                        <Button color="primary" block disabled={plato.stock === 0} onClick={() => agregarPlato(plato.id)}>
+                                        <Button 
+                                            color="primary" 
+                                            block 
+                                            disabled={plato.stock === 0 || tiempoExpirado} 
+                                            onClick={() => agregarPlato(plato.id)}
+                                        >
                                             {plato.stock === 0 ? 'Agotado' : 'Añadir a la Reserva'}
                                         </Button>
                                     </CardBody>
@@ -141,10 +202,10 @@ function App() {
                                     </div>
                                     <div className="d-flex align-items-center gap-2">
                                         <ButtonGroup size="sm">
-                                            <Button outline onClick={() => actualizarPorciones(item.id, item.cantidad - 1)}>-</Button>
-                                            <Button outline onClick={() => actualizarPorciones(item.id, item.cantidad + 1)}>+</Button>
+                                            <Button outline disabled={tiempoExpirado} onClick={() => actualizarPorciones(item.id, item.cantidad - 1)}>-</Button>
+                                            <Button outline disabled={tiempoExpirado} onClick={() => actualizarPorciones(item.id, item.cantidad + 1)}>+</Button>
                                         </ButtonGroup>
-                                        <Button color="danger" outline size="sm" onClick={() => eliminarPlato(item.id)}>Quitar</Button>
+                                        <Button color="danger" outline size="sm" disabled={tiempoExpirado} onClick={() => eliminarPlato(item.id)}>Quitar</Button>
                                     </div>
                                 </ListGroupItem>
                             ))}
