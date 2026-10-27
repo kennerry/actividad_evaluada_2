@@ -1,6 +1,6 @@
-const { leerDatos, guardarDatos } = require("../utils/helpers.js");
+import { leerDatos, guardarDatos } from "../utils/helpers.js";
 
-function mostrarMenu(req, res) {
+export function mostrarMenu(req, res) {
   try {
     const datos = leerDatos();
     res.json(datos.menu);
@@ -9,7 +9,7 @@ function mostrarMenu(req, res) {
   }
 }
 
-function mostrarReserva(req, res) {
+export function mostrarReserva(req, res) {
   try {
     const datos = leerDatos();
     res.json(datos.reserva);
@@ -18,7 +18,7 @@ function mostrarReserva(req, res) {
   }
 }
 
-function agregarPlatoAReserva(req, res) {
+export function agregarPlatoAReserva(req, res) {
   try {
     let { alimentoId, cantidad } = req.body;
 
@@ -56,7 +56,6 @@ function agregarPlatoAReserva(req, res) {
     plato.stock -= cant;
     datos.reserva.total += precioTotal;
     datos.reserva.saldo -= precioTotal;
-    // Actualizamos la reserva
 
     const itemExistente = datos.reserva.itemsReservados.find(
       (item) => item.id === id,
@@ -79,7 +78,7 @@ function agregarPlatoAReserva(req, res) {
   }
 }
 
-function actualizarReservas(req, res) {
+export function actualizarReservas(req, res) {
   try {
     const alimentoId = parseInt(req.params.id, 10);
     const cantidad = Number(req.body.cantidad);
@@ -111,7 +110,6 @@ function actualizarReservas(req, res) {
     const diferenciaCantidad = cantidad - itemEnReserva.cantidad;
 
     if (diferenciaCantidad > 0) {
-      // Aumentar porciones
       if (plato.stock < diferenciaCantidad) {
         return res.status(400).json({
           error: `Stock insuficiente. Solo quedan ${plato.stock} unidades adicionales disponibles`,
@@ -159,7 +157,7 @@ function actualizarReservas(req, res) {
   }
 }
 
-function borrarPlatoDeLaReserva(req, res) {
+export function borrarPlatoDeLaReserva(req, res) {
   try {
     const datos = leerDatos();
 
@@ -206,11 +204,3 @@ function borrarPlatoDeLaReserva(req, res) {
       .json({ error: "Error interno al eliminar el plato de la reserva" });
   }
 }
-
-module.exports = {
-  mostrarMenu,
-  mostrarReserva,
-  agregarPlatoAReserva,
-  actualizarReservas,
-  borrarPlatoDeLaReserva,
-};

@@ -49,4 +49,4 @@ Local databases & uploads
 *.sqlite
 *.sqlite3
 /uploads
-/tmp
+/tmp:

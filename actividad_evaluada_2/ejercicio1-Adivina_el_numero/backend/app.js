@@ -1,14 +1,18 @@
 const express = require("express");
 const cors = require("cors");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const app = express();
-const puerto = 3000;
+const PORT = process.env.PORT || 3000;
 
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173'
+}));
 app.use(express.json());
-app.use(cors());
 
-// Implementacion logica
-
+// Generar número aleatorio entre 1 y 100
 const generarNumeroAleatorio = () => {
   return Math.floor(Math.random() * 100) + 1;
 };
@@ -16,43 +20,42 @@ const generarNumeroAleatorio = () => {
 let numeroAdivinar = generarNumeroAleatorio();
 console.log(`Numero secreto inicial: ${numeroAdivinar}`);
 
+// Ruta POST /reset
 app.post("/reset", (req, res) => {
   numeroAdivinar = generarNumeroAleatorio();
-
-  res.json({ mensaje: "El juego se ha reiniciado!" });
+  console.log(`Nuevo numero secreto: ${numeroAdivinar}`);
+  res.json({ mensaje: "¡El juego se ha reiniciado correctamente!" });
 });
 
+// Ruta POST /guess
 app.post("/guess", (req, res) => {
   const numeroElejido = Number(req.body.numero);
 
-  if (isNaN(numeroElejido)) {
-    return res.status(400).json({ error: "Se debe enviar un numero valido" });
-  }
-
-  if (numeroElejido < 0 || numeroElejido > 100) {
-    return res
-      .status(400)
-      .json({ error: "El numero elejido debe estar en el rango de eleccion" });
+  // Validar si es un entero válido dentro del rango [1, 100]
+  if (!Number.isInteger(numeroElejido) || numeroElejido < 1 || numeroElejido > 100) {
+    return res.status(400).json({ 
+      error: "Debes enviar un número entero válido entre 1 y 100." 
+    });
   }
 
   if (numeroElejido > numeroAdivinar) {
     return res.json({
-      resultado: "Menor",
-      mensaje: "El numero a adivinar es menor!",
+      resultado: "menor",
+      mensaje: "El número oculto es MENOR.",
     });
   } else if (numeroElejido < numeroAdivinar) {
     return res.json({
-      resultado: "Mayor",
-      mensaje: "El numero a adivinar es mayor!",
+      resultado: "mayor",
+      mensaje: "El número oculto es MAYOR.",
     });
   } else {
     return res.json({
-      resultado: "Acierto",
-      mensaje: "Se ha acertado el numero secreto!",
+      resultado: "correcto",
+      mensaje: "¡Felicidades! Has acertado el número secreto.",
     });
   }
 });
 
-app.listen(puerto, () => {
-  console.log(`Servidor corriendo en http://localhost:${puerto}`);
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${PORT}`);
 });

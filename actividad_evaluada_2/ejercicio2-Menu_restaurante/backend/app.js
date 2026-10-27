@@ -1,15 +1,20 @@
-const express = require("express");
-const cors = require("cors")
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import apiRoutes from './routes/api.js';
+
+dotenv.config();
+
 const app = express();
-const apiRoutes = require("./routes/api.js");
+const PORT = process.env.PORT || 4000;
 
-const PUERTO = 3000;
-
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173'
+}));
 app.use(express.json());
-app.use(cors());
 
-app.use("/api", apiRoutes);
+app.use('/api', apiRoutes);
 
-app.listen(PUERTO, () => {
-  console.log(`Servidor corriendo en http://localhost:${PUERTO}`);
+app.listen(PORT, () => {
+  console.log(`Servidor Food DEI corriendo en el puerto ${PORT}`);
 });

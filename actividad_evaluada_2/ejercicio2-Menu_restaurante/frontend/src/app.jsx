@@ -18,7 +18,7 @@ import {
     ButtonGroup
 } from 'reactstrap';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 const TIEMPO_INICIAL = 300; //Segundos
 
 function App() {
