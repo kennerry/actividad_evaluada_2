@@ -19,12 +19,15 @@ import {
 } from 'reactstrap';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-const TIEMPO_INICIAL = 60; //Segundos
+const TIEMPO_INICIAL = 300; //Segundos
 
 function App() {
     const [menu, setMenu] = useState([]);
     const [reserva, setReserva] = useState({ saldo: 0, itemsReservados: [], total: 0 });
     const [errorMsg, setErrorMsg] = useState('');
+    const [exitoMsg, setExitoMsg] = useState('');
+    const [successMsg, setSuccessMsg] = useState('');
+    const [reservaConfirmada, setReservaConfirmada] = useState(false);
 
     // Estados para el Temporizador
     const [tiempo, setTiempo] = useState(TIEMPO_INICIAL);
@@ -39,7 +42,7 @@ function App() {
 
     // Hook para la cuenta regresiva
     useEffect(() => {
-        if (tiempoExpirado) return;
+        if (tiempoExpirado || reservaConfirmada) return;
 
         if (tiempo <= 0) {
             setTiempoExpirado(true);
@@ -54,6 +57,16 @@ function App() {
         // Limpieza del intervalo para evitar memory leaks
         return () => clearInterval(intervalo);
     }, [tiempo, tiempoExpirado]);
+
+    const confirmarReserva = () => {
+        if (!reserva.itemsReservados || reserva.itemsReservados.length === 0) {
+            setErrorMsg("No se puede confirmar una reserva vacia.")
+            return;
+        }
+        setReservaConfirmada(true);
+        setErrorMsg('');
+        setSuccessMsg('¡Reserva confirmada con éxito!')
+    }
 
     const cargarDatos = async () => {
         try {
@@ -172,6 +185,11 @@ function App() {
                 </Alert>
             )}
 
+            {successMsg && (
+                <Alert color="success" className='text-center mb-4'> {successMsg}
+                </Alert>
+            )}
+
             {errorMsg && !tiempoExpirado && <UncontrolledAlert color="warning">{errorMsg}</UncontrolledAlert>}
 
             <Row>
@@ -187,7 +205,7 @@ function App() {
                                         <Button
                                             color="primary"
                                             block
-                                            disabled={plato.stock === 0 || tiempoExpirado}
+                                            disabled={plato.stock === 0 || tiempoExpirado || reservaConfirmada}
                                             onClick={() => agregarPlato(plato.id)}
                                         >
                                             {plato.stock === 0 ? 'Agotado' : 'Añadir a la Reserva'}
@@ -213,15 +231,19 @@ function App() {
                                     </div>
                                     <div className="d-flex align-items-center gap-2">
                                         <ButtonGroup size="sm">
-                                            <Button outline disabled={tiempoExpirado} onClick={() => actualizarPorciones(item.id, item.cantidad - 1)}>-</Button>
-                                            <Button outline disabled={tiempoExpirado} onClick={() => actualizarPorciones(item.id, item.cantidad + 1)}>+</Button>
+                                            <Button outline disabled={tiempoExpirado || reservaConfirmada} onClick={() => actualizarPorciones(item.id, item.cantidad - 1)}>-</Button>
+                                            <Button outline disabled={tiempoExpirado || reservaConfirmada} onClick={() => actualizarPorciones(item.id, item.cantidad + 1)}>+</Button>
                                         </ButtonGroup>
-                                        <Button color="danger" outline size="sm" disabled={tiempoExpirado} onClick={() => eliminarPlato(item.id)}>Quitar</Button>
+                                        <Button color="danger" outline size="sm" disabled={tiempoExpirado || reservaConfirmada} onClick={() => eliminarPlato(item.id)}>Quitar</Button>
                                     </div>
                                 </ListGroupItem>
                             ))}
                         </ListGroup>
                     )}
+                    <Button color='success' size='lg' className='w-100 mt-4 shadow' disabled={tiempoExpirado || reservaConfirmada || !reserva.itemsReservados || reserva.itemsReservados.length === 0}
+                        onClick={confirmarReserva}>
+                        {reservaConfirmada ? "Reserva Finalizada" : "Confirmar Reserva"}
+                    </Button>
                 </Col>
             </Row>
         </Container>
