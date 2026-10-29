@@ -24,6 +24,8 @@ export function agregarPlatoAReserva(req, res) {
 
     const id = Number(alimentoId);
     const cant = Number(cantidad);
+    const cantLimpia = parseInt(cant);
+    // Utilizar para validaciones Number.isInteger();
 
     const datos = leerDatos();
 
@@ -202,5 +204,37 @@ export function borrarPlatoDeLaReserva(req, res) {
     return res
       .status(500)
       .json({ error: "Error interno al eliminar el plato de la reserva" });
+  }
+}
+
+export function reiniciarReserva(req, res) {
+  try {
+    const datos = leerDatos();
+
+    datos.reserva.itemsReservados.forEach((item) => {
+      const plato = datos.menu.find((d) => d.id == item.id);
+
+      if (plato) {
+        plato.stock += item.cantidad;
+      }
+    });
+
+    datos.reserva.saldo += datos.reserva.total;
+
+    datos.reserva.total = 0;
+    datos.reserva.itemsReservados = [];
+
+    guardarDatos(datos);
+
+    return res.json({
+      message: "La reservacion se ha reiniciado exitosamente!",
+      reserva: datos.reserva,
+      menu: datos.menu,
+    });
+  } catch (error) {
+    console.error("Error tratando de reiniciar la reservacion", error);
+    return res
+      .status(500)
+      .json({ error: "Error interno al reiniciar la reservacion" });
   }
 }

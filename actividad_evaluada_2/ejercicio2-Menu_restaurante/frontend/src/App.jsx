@@ -19,13 +19,13 @@ import {
 } from 'reactstrap';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-const TIEMPO_INICIAL = 300; //Segundos
+const TIEMPO_INICIAL = 60; //Segundos
 
 function App() {
     const [menu, setMenu] = useState([]);
     const [reserva, setReserva] = useState({ saldo: 0, itemsReservados: [], total: 0 });
     const [errorMsg, setErrorMsg] = useState('');
-    
+
     // Estados para el Temporizador
     const [tiempo, setTiempo] = useState(TIEMPO_INICIAL);
     const [tiempoExpirado, setTiempoExpirado] = useState(false);
@@ -73,10 +73,21 @@ function App() {
 
     const reiniciarReserva = async () => {
         // Vaciamos visualmente la reserva o llamamos a un reload de datos
-        setTiempo(TIEMPO_INICIAL);
-        setTiempoExpirado(false);
-        setErrorMsg('');
-        await cargarDatos();
+        try {
+
+            await fetch(`${API_URL}/reserva/reiniciar`, {
+                method: "POST"
+            })
+
+            setTiempo(TIEMPO_INICIAL);
+            setTiempoExpirado(false);
+            setErrorMsg('');
+
+            await cargarDatos();
+        } catch (error) {
+            setErrorMsg("Error al reiniciar la reserva en el servidor")
+        }
+
     };
 
     const agregarPlato = async (alimentoId) => {
@@ -143,10 +154,10 @@ function App() {
                 <div className="d-flex gap-3 align-items-center">
                     <span className="text-white">Saldo: <strong className="text-success">${Number(reserva.saldo).toFixed(2)}</strong></span>
                     <span className="text-white">Total: <Badge color="info" pill>${Number(reserva.total).toFixed(2)}</Badge></span>
-                    
-                    
+
+
                     <Badge color={tiempo < 60 ? "danger" : "warning"} pill className="fs-6 ms-2">
-                         {formatearTiempo(tiempo)}
+                        {formatearTiempo(tiempo)}
                     </Badge>
                 </div>
             </Navbar>
@@ -173,10 +184,10 @@ function App() {
                                     <CardBody>
                                         <CardTitle tag="h5">{plato.nombre} <Badge color="success">${Number(plato.precio).toFixed(2)}</Badge></CardTitle>
                                         <CardText>Stock: {plato.stock} porciones</CardText>
-                                        <Button 
-                                            color="primary" 
-                                            block 
-                                            disabled={plato.stock === 0 || tiempoExpirado} 
+                                        <Button
+                                            color="primary"
+                                            block
+                                            disabled={plato.stock === 0 || tiempoExpirado}
                                             onClick={() => agregarPlato(plato.id)}
                                         >
                                             {plato.stock === 0 ? 'Agotado' : 'Añadir a la Reserva'}

@@ -11,7 +11,7 @@
       "id": 102,
       "nombre": "Menu sixseven (infantil)",
       "precio": 6.7,
-      "stock": 0,
+      "stock": 6,
       "categoria": "Simple"
     },
     {
@@ -23,13 +23,8 @@
     }
   ],
   "reserva": {
-    "saldo": 9.799999999999997,
-    "itemsReservados": [
-      {
-        "id": 102,
-        "cantidad": 6
-      }
-    ],
-    "total": 40.2
+    "saldo": 50,
+    "itemsReservados": [],
+    "total": 0
   }
 }
