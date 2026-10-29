@@ -20,7 +20,7 @@ export function mostrarReserva(req, res) {
 
 export function agregarPlatoAReserva(req, res) {
   try {
-    let { alimentoId, cantidad } = req.body;
+    const { alimentoId, cantidad } = req.body;
 
     const id = Number(alimentoId);
     const cant = Number(cantidad);

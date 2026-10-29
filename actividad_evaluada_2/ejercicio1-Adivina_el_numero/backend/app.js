@@ -7,9 +7,11 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173'
-}));
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+  }),
+);
 app.use(express.json());
 
 // Generar número aleatorio entre 1 y 100
@@ -32,9 +34,13 @@ app.post("/guess", (req, res) => {
   const numeroElejido = Number(req.body.numero);
 
   // Validar si es un entero válido dentro del rango [1, 100]
-  if (!Number.isInteger(numeroElejido) || numeroElejido < 1 || numeroElejido > 100) {
-    return res.status(400).json({ 
-      error: "Debes enviar un número entero válido entre 1 y 100." 
+  if (
+    !Number.isInteger(numeroElejido) ||
+    numeroElejido < 1 ||
+    numeroElejido > 100
+  ) {
+    return res.status(400).json({
+      error: "Debes enviar un número entero válido entre 1 y 100.",
     });
   }
 
@@ -50,7 +56,7 @@ app.post("/guess", (req, res) => {
     });
   } else {
     return res.json({
-      resultado: "correcto",
+      resultado: "Acierto",
       mensaje: "¡Felicidades! Has acertado el número secreto.",
     });
   }
